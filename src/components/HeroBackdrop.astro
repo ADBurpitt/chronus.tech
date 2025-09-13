@@ -1,17 +1,20 @@
 ---
 /**
- * HeroBackdrop.astro
- * Subtle abstract background: drifting gradient blobs + soft grid.
- * Place as the FIRST child inside your hero container (position: relative).
+ * HeroBackdrop.astro — mobile light-theme contrast boost
+ * - Mobile: taller + later fade, stronger vignette and blobs ONLY on light theme
+ * - Dark/desktop unchanged
  */
-const grid = true; // set false to disable grid overlay
+const grid = true;
 ---
 
-<div class="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-  <!-- Soft grid (very light, adds structure) -->
+<div
+  class="pointer-events-none absolute inset-0 -z-10 overflow-hidden
+         h-[min(110svh,900px)] sm:h-[56svh] md:h-auto
+         [mask-image:linear-gradient(to_bottom,black,transparent_96%)] md:[mask-image:none]"
+>
   {
     grid && (
-      <svg class="absolute inset-0 h-full w-full opacity-[0.07] dark:opacity-[0.08]" aria-hidden="true">
+      <svg class="absolute inset-0 h-full w-full opacity-[0.1] dark:opacity-[0.08]" aria-hidden="true">
         <defs>
           <pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse">
             <path d="M40 0H0V40" fill="none" stroke="currentColor" stroke-width="1" />
@@ -24,23 +27,40 @@ const grid = true; // set false to disable grid overlay
 
   <!-- Gradient blobs -->
   <div
-    class="absolute -left-[10%] top-1/3 h-[32rem] w-[32rem] animate-blob rounded-full bg-[radial-gradient(circle_at_30%_30%,#60a5fa_0%,transparent_60%)] blur-3xl opacity-40 dark:opacity-30"
+    class="absolute -left-[10%] top-1/3 h-[30rem] w-[30rem]
+           animate-blob rounded-full
+           bg-[radial-gradient(circle_at_30%_30%,#60a5fa_0%,transparent_60%)]
+           opacity-55 dark:opacity-30
+           blur-2xl md:blur-3xl
+           mix-blend-multiply dark:mix-blend-normal"
+  >
+  </div>
+  <div
+    class="absolute left-1/2 top-0 h-[26rem] w-[26rem]
+           animate-blob animation-delay-2000 rounded-full
+           bg-[radial-gradient(circle_at_60%_40%,#a78bfa_0%,transparent_60%)]
+           opacity-55 dark:opacity-30
+           blur-2xl md:blur-3xl
+           mix-blend-multiply dark:mix-blend-normal"
+  >
+  </div>
+  <div
+    class="absolute -right-[10%] top-[62%] sm:top-1/2 h-[34rem] w-[34rem]
+           animate-blob animation-delay-4000 rounded-full
+           bg-[radial-gradient(circle_at_40%_60%,#22d3ee_0%,transparent_60%)]
+           opacity-55 dark:opacity-30
+           blur-2xl md:blur-3xl
+           mix-blend-multiply dark:mix-blend-normal"
   >
   </div>
 
+  <!-- Vignette: stronger on light mobile; original on md+ and dark -->
   <div
-    class="absolute left-1/2 top-0 h-[28rem] w-[28rem] animate-blob animation-delay-2000 rounded-full bg-[radial-gradient(circle_at_60%_40%,#a78bfa_0%,transparent_60%)] blur-3xl opacity-40 dark:opacity-30"
-  >
-  </div>
-
-  <div
-    class="absolute -right-[10%] top-1/2 h-[36rem] w-[36rem] animate-blob animation-delay-4000 rounded-full bg-[radial-gradient(circle_at_40%_60%,#22d3ee_0%,transparent_60%)] blur-3xl opacity-40 dark:opacity-30"
-  >
-  </div>
-
-  <!-- Gentle vignette so content pops -->
-  <div
-    class="absolute inset-0 bg-[radial-gradient(1200px_600px_at_50%_0%,transparent_0%,rgba(0,0,0,0.06)_70%,rgba(0,0,0,0.12)_100%)] dark:bg-[radial-gradient(1200px_600px_at_50%_0%,transparent_0%,rgba(0,0,0,0.25)_70%,rgba(0,0,0,0.35)_100%)]"
+    class="absolute inset-0
+      bg-[radial-gradient(160%_110%_at_50%_8%,transparent_0%,rgba(0,0,0,0.08)_68%,rgba(0,0,0,0.16)_100%)]
+      md:bg-[radial-gradient(1200px_600px_at_50%_0%,transparent_0%,rgba(0,0,0,0.06)_70%,rgba(0,0,0,0.12)_100%)]
+      dark:bg-[radial-gradient(140%_95%_at_50%_10%,transparent_0%,rgba(0,0,0,0.25)_70%,rgba(0,0,0,0.35)_100%)]
+      md:dark:bg-[radial-gradient(1200px_600px_at_50%_0%,transparent_0%,rgba(0,0,0,0.25)_70%,rgba(0,0,0,0.35)_100%)]"
   >
   </div>
 </div>
