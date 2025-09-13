@@ -14,6 +14,16 @@ const {
   description: descriptionClass = '',
   icon: defaultIconClass = 'text-primary',
 } = classes;
+
+function extractIcon(iconValue: unknown) {
+  if (!iconValue) return { name: undefined, className: undefined, node: undefined };
+  if (typeof iconValue === 'string') return { name: iconValue, className: undefined, node: undefined };
+  if (typeof iconValue === 'object' && iconValue !== null && 'name' in iconValue) {
+    const obj = iconValue as Record<string, unknown>;
+    return { name: obj.name as string | undefined, className: (obj.class as string) ?? undefined, node: undefined };
+  }
+  return { name: undefined, className: undefined, node: iconValue };
+}
 ---
 
 {
@@ -32,7 +42,7 @@ const {
         containerClass
       )}
     >
-      {items.map(({ title, description, icon, callToAction, classes: itemClasses = {} }) => (
+      {items.map(({ title, description, bullets, icon, callToAction, classes: itemClasses = {} }) => (
         <div
           class={twMerge(
             'relative flex flex-col intersect-once intersect-quarter intersect-no-queue motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade',
@@ -40,13 +50,39 @@ const {
             itemClasses?.panel
           )}
         >
-          {(icon || defaultIcon) && (
-            <Icon name={icon || defaultIcon} class={twMerge('mb-2 w-10 h-10', defaultIconClass, itemClasses?.icon)} />
-          )}
+          {(() => {
+            const { name: iconName, className: iconClass, node: iconNode } = extractIcon(icon ?? defaultIcon);
+            if (iconName) {
+              return (
+                <Icon
+                  name={iconName}
+                  class={twMerge('mb-2 w-10 h-10', defaultIconClass, itemClasses?.icon, iconClass)}
+                />
+              );
+            }
+            if (iconNode) {
+              return <div class={twMerge('mb-2 w-10 h-10', itemClasses?.icon)}>{iconNode}</div>;
+            }
+            return null;
+          })()}
           <div class={twMerge('text-xl font-bold', titleClass, itemClasses?.title)}>{title}</div>
-          {description && (
+          {Array.isArray(bullets) && bullets.length > 0 ? (
+            <ul
+              class={twMerge(
+                'text-muted mt-2 list-disc list-inside text-sm',
+                descriptionClass,
+                itemClasses?.description
+              )}
+            >
+              {bullets.map((b) => (
+                <li set:html={b} />
+              ))}
+            </ul>
+          ) : typeof description === 'string' ? (
             <p class={twMerge('text-muted mt-2', descriptionClass, itemClasses?.description)} set:html={description} />
-          )}
+          ) : description ? (
+            <div class={twMerge('text-muted mt-2', descriptionClass, itemClasses?.description)}>{description}</div>
+          ) : null}
           {callToAction && (
             <div class="mt-2">
               <Button {...callToAction} />

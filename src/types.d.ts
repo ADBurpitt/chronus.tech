@@ -135,7 +135,14 @@ export interface Stat {
 export interface Item {
   title?: string;
   description?: string;
-  icon?: string;
+  /** Optional list of bullet points to display instead of `description`. Each item can contain HTML. */
+  bullets?: string[];
+  /** Icon can be:
+   * - a string name (e.g. 'tabler:check')
+   * - an object { name?: string; class?: string } to specify a name and per-item classes
+   * - or a node/component (for advanced use)
+   */
+  icon?: string | { name?: string; class?: string } | unknown;
   classes?: Record<string, string>;
   callToAction?: CallToAction;
   image?: Image;

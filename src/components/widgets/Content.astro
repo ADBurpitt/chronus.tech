@@ -23,6 +23,8 @@ const {
   classes = {},
   bg = await Astro.slots.render('bg'),
 } = Astro.props;
+
+const isSvg = typeof image !== 'string' && image?.src && image.src.endsWith('.svg');
 ---
 
 <WidgetWrapper
@@ -44,7 +46,7 @@ const {
   <div class="mx-auto max-w-7xl p-4 md:px-8">
     <div class={`md:flex ${isReversed ? 'md:flex-row-reverse' : ''} md:gap-16`}>
       <div class="md:basis-1/2 self-center">
-        {content && <div class="mb-12 text-lg dark:text-slate-400" set:html={content} />}
+        {content && <div class={`${callToAction ? 'mb-12' : 'mb-4'} text-lg dark:text-slate-400`} set:html={content} />}
 
         {
           callToAction && (
@@ -74,6 +76,13 @@ const {
             <div class="relative m-auto max-w-4xl">
               {typeof image === 'string' ? (
                 <Fragment set:html={image} />
+              ) : isSvg ? (
+                <img
+                  src={image.src}
+                  alt={image.alt ?? ''}
+                  class="mx-auto w-full rounded-lg bg-gray-500 shadow-lg"
+                  loading="lazy"
+                />
               ) : (
                 <Image
                   class="mx-auto w-full rounded-lg bg-gray-500 shadow-lg"

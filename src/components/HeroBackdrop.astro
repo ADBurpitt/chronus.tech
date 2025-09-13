@@ -1,0 +1,76 @@
+---
+/**
+ * HeroBackdrop.astro
+ * Subtle abstract background: drifting gradient blobs + soft grid.
+ * Place as the FIRST child inside your hero container (position: relative).
+ */
+const grid = true; // set false to disable grid overlay
+---
+
+<div class="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+  <!-- Soft grid (very light, adds structure) -->
+  {
+    grid && (
+      <svg class="absolute inset-0 h-full w-full opacity-[0.07] dark:opacity-[0.08]" aria-hidden="true">
+        <defs>
+          <pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M40 0H0V40" fill="none" stroke="currentColor" stroke-width="1" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#g)" class="text-slate-400 dark:text-slate-500" />
+      </svg>
+    )
+  }
+
+  <!-- Gradient blobs -->
+  <div
+    class="absolute -left-[10%] top-1/3 h-[32rem] w-[32rem] animate-blob rounded-full bg-[radial-gradient(circle_at_30%_30%,#60a5fa_0%,transparent_60%)] blur-3xl opacity-40 dark:opacity-30"
+  >
+  </div>
+
+  <div
+    class="absolute left-1/2 top-0 h-[28rem] w-[28rem] animate-blob animation-delay-2000 rounded-full bg-[radial-gradient(circle_at_60%_40%,#a78bfa_0%,transparent_60%)] blur-3xl opacity-40 dark:opacity-30"
+  >
+  </div>
+
+  <div
+    class="absolute -right-[10%] top-1/2 h-[36rem] w-[36rem] animate-blob animation-delay-4000 rounded-full bg-[radial-gradient(circle_at_40%_60%,#22d3ee_0%,transparent_60%)] blur-3xl opacity-40 dark:opacity-30"
+  >
+  </div>
+
+  <!-- Gentle vignette so content pops -->
+  <div
+    class="absolute inset-0 bg-[radial-gradient(1200px_600px_at_50%_0%,transparent_0%,rgba(0,0,0,0.06)_70%,rgba(0,0,0,0.12)_100%)] dark:bg-[radial-gradient(1200px_600px_at_50%_0%,transparent_0%,rgba(0,0,0,0.25)_70%,rgba(0,0,0,0.35)_100%)]"
+  >
+  </div>
+</div>
+
+<style is:global>
+  @keyframes blob {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    33% {
+      transform: translate3d(2rem, -1rem, 0) scale(1.05);
+    }
+    66% {
+      transform: translate3d(-2rem, 1rem, 0) scale(0.98);
+    }
+  }
+  .animate-blob {
+    animation: blob 18s ease-in-out infinite;
+  }
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-blob {
+      animation: none;
+    }
+  }
+</style>

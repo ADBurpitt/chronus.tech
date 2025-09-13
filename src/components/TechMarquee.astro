@@ -1,0 +1,174 @@
+---
+import { twMerge } from 'tailwind-merge';
+
+/**
+ * TechMarquee.astro
+ * Auto-scrolling row of technology logos with faded edges.
+ */
+
+interface Logo {
+  name: string;
+  src: string;
+  /** Optional Tailwind classes to apply to the <img> for per-logo sizing/styling */
+  imgClass?: string;
+  /** If true, do not apply the dark-mode invert/brightness filters for this logo */
+  noInvert?: boolean;
+}
+
+const logos: Logo[] = [
+  { name: 'PyTorch', src: '/logos/pytorch.svg', imgClass: 'h-8' },
+  { name: 'Kubernetes', src: '/logos/k8s.svg', imgClass: 'h-8', noInvert: true },
+  { name: 'Azure', src: '/logos/azure.svg', imgClass: 'h-18' },
+  { name: 'Postgresql', src: '/logos/postgres.svg', imgClass: 'h-8' },
+  { name: 'OpenAI', src: '/logos/openai.svg', imgClass: 'h-8' },
+  { name: 'LangChain', src: '/logos/langchain.svg', imgClass: 'h-2' },
+  { name: 'GCP', src: '/logos/gcp.svg', imgClass: 'h-4', noInvert: true },
+  { name: 'HuggingFace', src: '/logos/huggingface.svg', imgClass: 'h-10', noInvert: true },
+  { name: 'Terraform', src: '/logos/terraform.svg', imgClass: 'h-20' },
+  { name: 'AWS', src: '/logos/aws.svg', imgClass: 'h-10' },
+  { name: 'Livekit', src: '/logos/livekit.svg', imgClass: 'h-6', noInvert: true },
+];
+
+// Auto-fit: read each SVG file, extract natural viewBox/height and compute
+// responsive target heights. Baseline is 32px (md), scaled per-logo so
+// visually-small icons are enlarged and large ones reduced.
+import fs from 'node:fs';
+import path from 'node:path';
+
+const baseline = 32; // baseline height for md
+for (const l of logos) {
+  try {
+    const publicPath = l.src.replace(/^\//, '');
+    const filePath = path.join(process.cwd(), 'public', publicPath);
+    const contents = fs.readFileSync(filePath, 'utf8');
+    // try to find viewBox="minX minY width height"
+    const vb = /viewBox="([\d\.\-]+)\s+([\d\.\-]+)\s+([\d\.\-]+)\s+([\d\.\-]+)"/.exec(contents);
+    let naturalH: number | undefined;
+    if (vb) {
+      naturalH = parseFloat(vb[4]);
+    } else {
+      // fallback to height attr on svg
+      const hAttr = /<svg[^>]*\sheight=["']?([\d\.]+)(px)?["']?/i.exec(contents);
+      if (hAttr) naturalH = parseFloat(hAttr[1]);
+    }
+    if (!naturalH || Number.isNaN(naturalH) || naturalH <= 0) {
+      naturalH = baseline; // fallback
+    }
+
+    const factor = baseline / naturalH;
+    const sm = Math.max(12, Math.round(baseline * 0.75 * factor));
+    const md = Math.max(14, Math.round(baseline * factor));
+    const lg = Math.max(18, Math.round(baseline * 1.25 * factor));
+
+    // expose computed sizes on logo for rendering
+    (l as any)._logo_h_sm = sm;
+    (l as any)._logo_h_md = md;
+    (l as any)._logo_h_lg = lg;
+  } catch (err) {
+    // ignore and leave defaults
+    (l as any)._logo_h_sm = 16;
+    (l as any)._logo_h_md = baseline;
+    (l as any)._logo_h_lg = Math.round(baseline * 1.25);
+  }
+}
+---
+
+<section class="w-full pb-32" aria-label="Technologies we work with">
+  <div class="relative mx-auto max-w-7xl overflow-hidden px-4 sm:px-6 flex justify-center">
+    <div
+      class="w-full max-w-4xl overflow-hidden px-4 sm:px-6"
+      style="mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent); -webkit-mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);"
+    >
+      <div class="marquee mx-auto flex gap-10 md:gap-14" style="justify-content:center;">
+        <!-- Track 1 -->
+        <div class="flex shrink-0 items-center gap-10 md:gap-14 justify-center">
+          {
+            logos.map((l) => (
+              <div class="flex h-10 items-center grayscale opacity-70 transition hover:opacity-100" title={l.name}>
+                <img
+                  src={l.src}
+                  alt={l.name}
+                  class={twMerge(
+                    'w-auto object-contain',
+                    l.noInvert ? '' : 'dark:invert dark:brightness-125 dark:contrast-125',
+                    l.imgClass
+                  )}
+                  loading="lazy"
+                />
+              </div>
+            ))
+          }
+        </div>
+
+        <!-- Track 2 (duplicate for seamless loop) -->
+        <div class="flex shrink-0 items-center gap-10 md:gap-14 justify-center" aria-hidden="true">
+          {
+            logos.map((l) => (
+              <div class="flex h-10 items-center grayscale opacity-70 transition hover:opacity-100">
+                <img
+                  src={l.src}
+                  alt=""
+                  aria-hidden="true"
+                  class={twMerge(
+                    'h-6 w-auto object-contain',
+                    l.noInvert ? '' : 'dark:invert dark:brightness-125 dark:contrast-125',
+                    l.imgClass
+                  )}
+                  loading="lazy"
+                />
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  @keyframes marquee-scroll {
+    /* move the track by 50% total but offset the start so the visible center aligns
+       with the marquee center. This translates from -25% to -75% which is a 50%
+       shift and keeps the loop seamless while centering the visible content. */
+    from {
+      transform: translateX(-25%);
+    }
+    to {
+      transform: translateX(-75%);
+    }
+  }
+  .marquee {
+    width: max-content;
+    animation: marquee-scroll 30s linear infinite;
+  }
+  /* Mask fallback if unsupported: just add side padding so logos don't hard-cut */
+  @supports not ((mask-image: linear-gradient(#000, #000))) {
+    .marquee {
+      padding-inline: 2rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee {
+      animation: none;
+    }
+  }
+
+  /* Ensure logos don't get too small or too large: provide a responsive min/max height
+     so small icons are scaled up to be visible and big ones are capped. */
+  .marquee img {
+    min-height: 20px;
+    max-height: 56px;
+  }
+  @media (min-width: 640px) {
+    .marquee img {
+      min-height: 24px;
+      max-height: 72px;
+    }
+  }
+  @media (min-width: 1024px) {
+    .marquee img {
+      min-height: 28px;
+      max-height: 88px;
+    }
+  }
+</style>
