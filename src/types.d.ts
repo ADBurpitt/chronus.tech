@@ -217,6 +217,10 @@ export interface Form {
   disclaimer?: Disclaimer;
   button?: string;
   description?: string;
+  // Optional fields used by the Form component for external endpoints
+  endpoint?: string;
+  thanksUrl?: string;
+  subject?: string;
 }
 
 // WIDGETS
@@ -224,6 +228,7 @@ export interface Hero extends Omit<Headline, 'classes'>, Omit<Widget, 'isDark' |
   content?: string;
   actions?: string | CallToAction[];
   image?: string | unknown;
+  padding?: string;
 }
 
 export interface Team extends Omit<Headline, 'classes'>, Widget {

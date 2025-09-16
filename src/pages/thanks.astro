@@ -1,0 +1,79 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+
+import Hero from '~/components/widgets/Hero.astro';
+import SectionBackdrop from '~/components/ui/SectionBackdrop.astro';
+import Button from '~/components/ui/Button.astro';
+
+const metadata = {
+  title: 'chronus.tech',
+  ignoreTitleTemplate: true,
+};
+
+const CAL_URL = 'https://cal.com/aaron-burpitt/15min';
+---
+
+<Layout metadata={metadata} hideWorkWithUs>
+  <!-- Hero -->
+
+  <section>
+    <Hero id="hero" title="Thank you!" padding="py-10">
+      <Fragment slot="subtitle">We'll be in touch shortly.</Fragment>
+    </Hero>
+
+    <SectionBackdrop variant="hero" mask="bottom" />
+
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <div class="min-h-[75svh] py-8">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <!-- Card: What happens next -->
+          <div
+            class="rounded-2xl border border-gray-200/70 dark:border-gray-700/70 bg-white/70 dark:bg-slate-900/70
+                   shadow-[0_10px_20px_rgba(0,0,0,0.05)] p-6 md:p-7 max-w-md"
+          >
+            <h3 class="text-lg font-semibold">What happens next</h3>
+            <ol class="mt-3 space-y-4 text-sm leading-6">
+              <li class="flex items-start gap-3">
+                <span class="flex-none mt-1.5 h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                <div><strong>We review your note.</strong> We skim for fit, scope, and any quick wins.</div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="flex-none mt-1.5 h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                <div>
+                  <strong>We follow up.</strong> Usually within one business day with clarifying questions or next steps.
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="flex-none mt-1.5 h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                <div><strong>Kickoff options.</strong> Async proposal or a quick call, your choice.</div>
+              </li>
+            </ol>
+          </div>
+
+          <!-- Card: Book a call -->
+          <div
+            class="rounded-2xl border border-gray-200/70 dark:border-gray-700/70 bg-white/70 dark:bg-slate-900/70
+                   shadow-[0_10px_20px_rgba(0,0,0,0.05)] p-6 md:p-7 flex flex-col max-w-md"
+          >
+            <h3 class="text-lg font-semibold">Book a call</h3>
+            <p class="mt-2 text-sm opacity-80">
+              Skip the back-and-forth and get straight to it. Pick a slot that works for you.
+            </p>
+
+            <Button
+              class="mt-10 w-full rounded-full py-3 text-base"
+              text="Open calendar →"
+              variant="primary"
+              href={CAL_URL}
+              target="_blank"
+            />
+
+            <p class="mt-6 text-xs opacity-50">
+              Prefer email? You can reply directly to the confirmation you'll receive.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

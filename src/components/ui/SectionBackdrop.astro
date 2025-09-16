@@ -1,0 +1,117 @@
+---
+/**
+ * SectionBackdrop — drop inside any section/container with `relative`
+ * to get your grid + blobs + vignette for just that slice.
+ *
+ * Props:
+ *  - variant: "hero" (bigger blobs, like your original) or "band" (smaller)
+ *  - grid: show the grid overlay
+ *  - mask: "none" | "bottom" | "top" | "y" (soft fade at edges)
+ */
+export interface Props {
+  variant?: 'hero' | 'band';
+  grid?: boolean;
+  mask?: 'none' | 'bottom' | 'top' | 'y';
+}
+const { variant = 'hero', grid = true, mask = 'none' } = Astro.props;
+
+const maskClass =
+  mask === 'bottom'
+    ? 'mask-bottom-soft md:mask-none'
+    : mask === 'top'
+      ? 'mask-top-soft md:mask-none'
+      : mask === 'y'
+        ? 'mask-y-soft md:mask-none'
+        : '';
+---
+
+<div class={`pointer-events-none absolute inset-0 -z-10 overflow-hidden ${maskClass}`}>
+  {
+    grid && (
+      <svg class="absolute inset-0 h-full w-full opacity-[0.10] dark:opacity-[0.08]" aria-hidden="true">
+        <defs>
+          <pattern id="sb-sec-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M40 0H0V40" fill="none" stroke="currentColor" stroke-width="1" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#sb-sec-grid)" class="text-slate-400 dark:text-slate-500" />
+      </svg>
+    )
+  }
+
+  <!-- Blobs (sizes/positions vary by variant) -->
+  <div
+    class={`absolute rounded-full animate-blob blur-2xl md:blur-3xl mix-blend-multiply dark:mix-blend-normal
+            opacity-55 dark:opacity-30 ${variant === 'hero' ? '-left-[10%] top-1/3 h-[30rem] w-[30rem]' : '-left-[12%] top-0 h-[20rem] w-[20rem]'}`}
+    style="background: radial-gradient(circle at 30% 30%, #60a5fa 0%, transparent 60%);"
+  >
+  </div>
+
+  <div
+    class={`absolute rounded-full animate-blob animation-delay-2000 blur-2xl md:blur-3xl mix-blend-multiply dark:mix-blend-normal
+            opacity-55 dark:opacity-30 ${variant === 'hero' ? 'left-1/2 top-0 h-[26rem] w-[26rem]' : 'left-[25%] top-[10%] h-[18rem] w-[18rem]'}`}
+    style="background: radial-gradient(circle at 60% 40%, #a78bfa 0%, transparent 60%);"
+  >
+  </div>
+
+  <div
+    class={`absolute rounded-full animate-blob animation-delay-4000 blur-2xl md:blur-3xl mix-blend-multiply dark:mix-blend-normal
+            opacity-55 dark:opacity-30 ${variant === 'hero' ? '-right-[10%] top-[62%] sm:top-1/2 h-[34rem] w-[34rem]' : '-right-[12%] top-[10%] h-[22rem] w-[22rem]'}`}
+    style="background: radial-gradient(circle at 40% 60%, #22d3ee 0%, transparent 60%);"
+  >
+  </div>
+
+  <!-- Vignette (same stops as your original) -->
+  <div
+    class="absolute inset-0
+           bg-[radial-gradient(160%_110%_at_50%_8%,transparent_0%,rgba(0,0,0,0.08)_68%,rgba(0,0,0,0.16)_100%)]
+           md:bg-[radial-gradient(1200px_600px_at_50%_0%,transparent_0%,rgba(0,0,0,0.06)_70%,rgba(0,0,0,0.12)_100%)]
+           dark:bg-[radial-gradient(140%_95%_at_50%_10%,transparent_0%,rgba(0,0,0,0.25)_70%,rgba(0,0,0,0.35)_100%)]
+           md:dark:bg-[radial-gradient(1200px_600px_at_50%_0%,transparent_0%,rgba(0,0,0,0.25)_70%,rgba(0,0,0,0.35)_100%)]"
+  >
+  </div>
+</div>
+
+<style is:global>
+  @keyframes blob {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    33% {
+      transform: translate3d(2rem, -1rem, 0) scale(1.05);
+    }
+    66% {
+      transform: translate3d(-2rem, 1rem, 0) scale(0.98);
+    }
+  }
+  .animate-blob {
+    animation: blob 18s ease-in-out infinite;
+  }
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+
+  /* Soft masks for fades between sections */
+  .mask-bottom-soft {
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 96%);
+    mask-image: linear-gradient(to bottom, black 0%, transparent 96%);
+  }
+  .mask-top-soft {
+    -webkit-mask-image: linear-gradient(to top, black 0%, transparent 96%);
+    mask-image: linear-gradient(to top, black 0%, transparent 96%);
+  }
+  .mask-y-soft {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-blob {
+      animation: none;
+    }
+  }
+</style>

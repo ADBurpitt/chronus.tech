@@ -12,7 +12,7 @@ const {
   content = await Astro.slots.render('content'),
   actions = await Astro.slots.render('actions'),
   image = await Astro.slots.render('image'),
-
+  padding = await Astro.slots.render('padding'),
   id,
   bg = await Astro.slots.render('bg'),
 } = Astro.props;
@@ -26,8 +26,8 @@ const {
   </div>
   <div class="relative max-w-7xl mx-auto px-4 sm:px-6">
     <div class="pt-0 md:pt-[76px] pointer-events-none"></div>
-    <div class="py-8 md:py-12">
-      <div class="text-center pb-10 md:pb-16 max-w-5xl mx-auto">
+    <div class={padding || 'py-8 md:py-12'}>
+      <div class="text-center max-w-5xl mx-auto">
         {
           tagline && (
             <p

@@ -2,14 +2,29 @@
 import type { Form as Props } from '~/types';
 import Button from '~/components/ui/Button.astro';
 
-const { inputs, textarea, disclaimer, button = 'Contact us', description = '' } = Astro.props;
+const {
+  inputs,
+  textarea,
+  disclaimer,
+  button = 'Contact us',
+  description = '',
+  endpoint,      
+  thanksUrl = '/thanks',
+  subject = 'New inquiry'
+} = Astro.props as Props;
 ---
 
-<form>
+<form
+  id="contact-form"
+  action={endpoint || undefined}
+  method="POST"
+  accept-charset="UTF-8"
+  data-thanks-url={thanksUrl}
+>
   {
-    inputs &&
+      inputs &&
       inputs.map(
-        ({ type = 'text', name, label = '', autocomplete = 'on', placeholder = '' }) =>
+        ({ type: inputType = 'text', name, label = '', autocomplete = 'on', placeholder = '' }) =>
           name && (
             <div class="mb-6">
               {label && (
@@ -18,12 +33,13 @@ const { inputs, textarea, disclaimer, button = 'Contact us', description = '' } 
                 </label>
               )}
               <input
-                type={type}
+                type={inputType}
                 name={name}
                 id={name}
                 autocomplete={autocomplete}
                 placeholder={placeholder}
-                class="py-3 px-4 block w-full text-md rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900"
+                required
+                class="py-2 px-4 block w-full text-md rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900"
               />
             </div>
           )
@@ -40,12 +56,24 @@ const { inputs, textarea, disclaimer, button = 'Contact us', description = '' } 
           id="textarea"
           name={textarea.name ? textarea.name : 'message'}
           rows={textarea.rows ? textarea.rows : 4}
-          placeholder={textarea.placeholder}
-          class="py-3 px-4 block w-full text-md rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900"
-        />
+          placeholder={textarea.placeholder || ''}
+          required
+          class="py-2 px-4 block w-full text-md rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900"
+        ></textarea>
       </div>
     )
   }
+
+  <!-- Hidden fields for Formspree -->
+  {endpoint && (
+    <>
+      <input type="hidden" name="_subject" value={subject} />
+      <!-- Honeypot; keep hidden -->
+      <label class="hidden">Don't fill this out if you're human:
+        <input name="_gotcha" tabindex="-1" autocomplete="off" />
+      </label>
+    </>
+  )}
 
   {
     disclaimer && (
@@ -55,6 +83,7 @@ const { inputs, textarea, disclaimer, button = 'Contact us', description = '' } 
             id="disclaimer"
             name="disclaimer"
             type="checkbox"
+            required
             class="cursor-pointer mt-1 py-3 px-4 block w-full text-md rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900"
           />
         </div>
@@ -69,8 +98,8 @@ const { inputs, textarea, disclaimer, button = 'Contact us', description = '' } 
 
   {
     button && (
-      <div class="mt-10 grid">
-        <Button variant="primary" type="submit">
+      <div class="mt-6 grid">
+        <Button id="contact-submit" variant="primary" type="submit">
           {button}
         </Button>
       </div>
@@ -85,3 +114,81 @@ const { inputs, textarea, disclaimer, button = 'Contact us', description = '' } 
     )
   }
 </form>
+
+<script is:inline>
+  (function () {
+    const form = document.getElementById('contact-form');
+    if (!form) return;
+
+    const thanksUrl = form.dataset.thanksUrl || '/thanks';
+    const submitBtn = form.querySelector('#contact-submit');
+
+    // Prevent double submits
+    let inFlight = false;
+
+    form.addEventListener('submit', async (e) => {
+      // Always intercept; if JS fails for any reason, the Formspree
+      // dashboard "Redirect" setting will handle fallback.
+      e.preventDefault();
+
+      // Native HTML5 validation first
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      if (inFlight) return;
+      inFlight = true;
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.setAttribute('aria-busy', 'true');
+      }
+
+      try {
+        const fd = new FormData(form);
+
+        // Honeypot
+        if (fd.get('_gotcha')) {
+          inFlight = false;
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.removeAttribute('aria-busy');
+          }
+          return;
+        }
+
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: fd,
+          // Ensures Formspree returns JSON (no redirect) for AJAX. 
+          // (Their docs recommend this header.)
+          headers: { 'Accept': 'application/json' },
+          redirect: 'manual' // belt & suspenders: don't follow any 3xx
+        });
+
+        if (res.ok) {
+          window.location.assign(thanksUrl);
+          return;
+        }
+
+        // Try to surface Formspree error message if present
+        let msg = 'There was a problem submitting the form. Please try again.';
+        try {
+          const data = await res.json();
+          if (data && Array.isArray(data.errors) && data.errors[0]?.message) {
+            msg = data.errors[0].message;
+          }
+        } catch { /* ignore parse errors */ }
+        alert(msg);
+      } catch {
+        alert('Network error. Please check your connection and try again.');
+      } finally {
+        inFlight = false;
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.removeAttribute('aria-busy');
+        }
+      }
+    });
+  })();
+</script>

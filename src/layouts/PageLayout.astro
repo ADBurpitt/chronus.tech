@@ -10,17 +10,24 @@ import type { MetaData } from '~/types';
 
 export interface Props {
   metadata?: MetaData;
+  showAnnouncement?: boolean;
+  hideWorkWithUs?: boolean;
 }
 
-const { metadata } = Astro.props;
+const { metadata, showAnnouncement = false, hideWorkWithUs = false } = Astro.props;
+
+const headerProps = {
+  ...headerData,
+  actions: hideWorkWithUs ? headerData.actions.filter((a) => a.text !== 'Work with us') : headerData.actions,
+};
 ---
 
 <Layout metadata={metadata}>
   <slot name="announcement">
-    <Announcement />
+    {showAnnouncement && <Announcement />}
   </slot>
   <slot name="header">
-    <Header {...headerData} isSticky showRssFeed showToggleTheme />
+    <Header {...headerProps} isSticky showToggleTheme />
   </slot>
   <main>
     <slot />
